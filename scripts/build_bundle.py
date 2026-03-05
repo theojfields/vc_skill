@@ -3,6 +3,26 @@ import argparse
 from pathlib import Path
 
 
+def resolve_safe_out_path(skill_dir: Path, out_arg: str) -> Path:
+    out = Path(out_arg)
+    if not out.is_absolute():
+        out = skill_dir / out
+
+    resolved = out.resolve()
+    skill_root = skill_dir.resolve()
+
+    # Prevent writes outside the skill directory (agent/prompt-injection safety)
+    try:
+        resolved.relative_to(skill_root)
+    except ValueError as exc:
+        raise ValueError(f"--out must stay inside skill directory: {skill_root}") from exc
+
+    if resolved.suffix.lower() != ".md":
+        raise ValueError("--out must point to a .md file")
+
+    return resolved
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--author", choices=["paul", "fred"], required=True)
@@ -15,9 +35,7 @@ def main():
     files = sorted(src.glob("*.md"), key=lambda x: x.name)
 
     selected = files[: args.limit]
-    out = Path(args.out)
-    if not out.is_absolute():
-        out = skill_dir / out
+    out = resolve_safe_out_path(skill_dir, args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
 
     with out.open("w", encoding="utf-8") as f:

@@ -24,6 +24,11 @@ def slugify(s: str) -> str:
 def sanitize_text(text: str) -> str:
     # Keep printable text + common whitespace; strip control chars
     text = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]", "", text)
+    # Strip invisible/zero-width unicode commonly used in prompt-injection obfuscation
+    text = re.sub(r"[\u200B\u200C\u200D\u200E\u200F\u2060\uFEFF]", "", text)
+    # Normalize suspicious markdown/html command-pattern blocks into plain text markers
+    text = re.sub(r"(?i)```(?:prompt|system|assistant|tool)[\s\S]*?```", "[stripped fenced instruction block]", text)
+    text = re.sub(r"(?i)<script[\s\S]*?</script>", "[stripped script block]", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text
 
