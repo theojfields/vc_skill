@@ -51,3 +51,8 @@ Generated: 2026-03-05 20:36 UTC
 - fred_wilson_full_035.md
 - fred_wilson_full_036.md
 - fred_wilson_full_037.md
+
+
+## Fred Wilson (AVC.xyz)
+- Posts ingested: 82
+- fred_wilson_avc_xyz_full_001.md

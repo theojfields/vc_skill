@@ -28,8 +28,12 @@ Maintain a **lean prompt footprint** while keeping full essay text available on 
 ## Archive layout
 
 - `references/paul_graham_index.md` — title/url index
-- `references/fred_wilson_index.md` — title/url/date index
-- `cache/paul/*.md` — full text per essay
-- `cache/fred/*.md` — full text per post
+- `references/fred_wilson_index.md` — AVC.com title/url/date index
+- `references/fred_wilson_avc_xyz_index.md` — AVC.xyz title/url/date index
+- `references/fred_wilson_avc_xyz_full_*.md` — AVC.xyz full text shards
+- `references/paul_graham_full_*.md` — Paul Graham full text shards
+- `references/fred_wilson_full_*.md` — AVC.com full text shards
+- `cache/paul/*.md` — on-demand full text per essay
+- `cache/fred/*.md` — on-demand full text per post
 
 If data is missing or blocked by a site, state that explicitly and continue with available sources.
