@@ -1,15 +1,40 @@
 #!/usr/bin/env python3
+from pathlib import Path
+from urllib.parse import urljoin, urlparse
+
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
-from pathlib import Path
 
 UA = {"User-Agent": "Mozilla/5.0 (OpenClaw vc-essay-archive)"}
 BASE = "https://paulgraham.com/articles.html"
+ALLOWED_HOSTS = {"paulgraham.com", "www.paulgraham.com"}
+MAX_RESPONSE_BYTES = 2 * 1024 * 1024  # 2MB
+
+
+def get_limited_html(url: str) -> str:
+    with requests.get(url, headers=UA, timeout=30, stream=True, verify=True, allow_redirects=True) as r:
+        r.raise_for_status()
+        final_host = (urlparse(r.url).hostname or "").lower()
+        if final_host not in ALLOWED_HOSTS:
+            raise ValueError(f"Redirected to non-allowed host: {final_host}")
+
+        content_length = r.headers.get("Content-Length")
+        if content_length and int(content_length) > MAX_RESPONSE_BYTES:
+            raise ValueError(f"Response too large: {content_length} bytes")
+
+        data = bytearray()
+        for chunk in r.iter_content(chunk_size=16384):
+            if not chunk:
+                continue
+            data.extend(chunk)
+            if len(data) > MAX_RESPONSE_BYTES:
+                raise ValueError(f"Response exceeded max size ({MAX_RESPONSE_BYTES} bytes)")
+
+        return data.decode(r.encoding or "utf-8", errors="replace")
 
 
 def main():
-    html = requests.get(BASE, headers=UA, timeout=30).text
+    html = get_limited_html(BASE)
     soup = BeautifulSoup(html, "lxml")
     rows = []
     for a in soup.find_all("a", href=True):
